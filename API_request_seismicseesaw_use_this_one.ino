@@ -89,11 +89,15 @@ void setup()
 
   connectToWifi(ssid, password);
 
+  previousMillis = 0;
+  Serial.print("Start time = ");
+  Serial.println(previousMillis);
+
   JsonObject json = makeAPIcall(host, url, sslClient, 443);
 
   float mag = json["features"][0]["properties"]["mag"]; // This will return the magnitude of the last earthquake to happen
 
-  Serial.println("\n\nSome Data: ");
+  Serial.print("\n\nMagnitude: ");
   Serial.println(mag);
 
 
@@ -103,10 +107,6 @@ void setup()
   pinMode(ledPin, OUTPUT);
   // initialize the LED as an output:
   pinMode(richterPin, OUTPUT);
-
-  previousMillis = 0;
-  Serial.print("Start time = ");
-  Serial.println(previousMillis);
 
   display.clear();
   delay(1000);
@@ -127,15 +127,15 @@ void loop()
 {
 
   JsonObject json = makeAPIcall(host, url, sslClient, 443);
-  
+
   float mag = json["features"][0]["properties"]["mag"]; // This will return the magnitude of the last earthquake to happen
 
-  Serial.println("\n\nSome Data: ");
+  Serial.print("\n\nMagnitude: ");
   Serial.println(mag);
 
   delay(10000);
 
-// haltFirmware();
+  // haltFirmware();
 
 
 }

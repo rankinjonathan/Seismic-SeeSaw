@@ -1,6 +1,6 @@
 unsigned int makeGetRequest(String &host, String &url, Client &httpClient, int port, bool &chunked)
 {
-  Serial.println(((port == 443) ? ("https://") : ("http://")) + host + url);
+//  Serial.println(((port == 443) ? ("https://") : ("http://")) + host + url);
   unsigned int contentLength;
   chunked = false;
 
@@ -20,7 +20,7 @@ unsigned int makeGetRequest(String &host, String &url, Client &httpClient, int p
   while (httpClient.connected())
   {
     String line = httpClient.readStringUntil('\n');
-    Serial.println(line);
+//    Serial.println(line);
     if (line.startsWith("Content-Length: "))
     {
       contentLength = getContentLength(line);
@@ -136,7 +136,7 @@ unsigned int parseContent(unsigned int contentLength, Client &httpClient)
       byteCounter++;
       if (byteCounter == contentLength)
       {
-        Serial.println(byteCounter);
+//        Serial.println(byteCounter);
         break;
       }
     }
@@ -149,7 +149,7 @@ void printHttpResponse(unsigned int charCount)
 {
   for (int i = 0; i < charCount; i++)
   {
-    Serial.print(httpResponse[i]);
+//    Serial.print(httpResponse[i]);
   }
   Serial.println();
 }
