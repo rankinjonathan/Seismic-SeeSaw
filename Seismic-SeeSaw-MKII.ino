@@ -30,8 +30,8 @@ DeserializationError errorCheck;
 const unsigned int CHARACTER_LIMIT = 10000; // Limit of characters in HTTP response
 //---------------------------------------------------------------------------------------------------------------------------------------
 // WiFi Connection
-const char* ssid = "BTHub5-6XT3";          // replace these with the name and password for your local wi-fi network
-const char* password = "8c7b86f3b9";
+const char* ssid = "-------";          // replace these with the name and password for your local wi-fi network
+const char* password = "-------";
 //---------------------------------------------------------------------------------------------------------------------------------------
 // API
 String host = "earthquake.usgs.gov";
