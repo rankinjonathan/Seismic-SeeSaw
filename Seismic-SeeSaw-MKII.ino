@@ -16,14 +16,13 @@
    Do you need to add any Libraries?
 */
 //---------------------------------------------------------------------------------------------------------------------------------------
-// library defines
-#define ARDUINOJSON_USE_LONG_LONG 1 // allow ArduinoJSON to use uint64_t
+#define ARDUINOJSON_USE_LONG_LONG 1
 //---------------------------------------------------------------------------------------------------------------------------------------
 // Libraries
 #include <WiFi101.h>
 #include <ArduinoJson.h>
-//#include <SPI.h>
-//#include <Wire.h>
+#include <SPI.h>
+#include <Wire.h>
 #include <Servo.h>
 #include <TM1637Display.h>
 //---------------------------------------------------------------------------------------------------------------------------------------
