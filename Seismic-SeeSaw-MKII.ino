@@ -134,7 +134,7 @@ void loop()
   JsonObject json = makeAPIcall(host, url, sslClient, 443);
 
   float mag = json["features"][0]["properties"]["mag"]; // This will return the magnitude of the last earthquake to happen
-  unsigned long quaketime = json["features"][0]["properties"]["time"]; // This will return the unix time of the last earthquake to happen
+  unsigned long quaketime = json["features"][0]["properties"]["time"].as<uint64_t>(); // This will return the unix time of the last earthquake to happen
 
   Serial.print("\n\nMagnitude: ");
   Serial.println(mag);
