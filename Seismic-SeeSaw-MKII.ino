@@ -26,6 +26,7 @@
 #include <Servo.h>
 #include <TM1637Display.h>
 //---------------------------------------------------------------------------------------------------------------------------------------
+DeserializationError errorCheck;
 const unsigned int CHARACTER_LIMIT = 10000; // Limit of characters in HTTP response
 //---------------------------------------------------------------------------------------------------------------------------------------
 // WiFi Connection
@@ -40,6 +41,7 @@ String url = "/fdsnws/event/1/query?format=geojson&limit=1";
 WiFiSSLClient sslClient;  // HTTPS
 WiFiClient client;        // HTTP
 char httpResponse[CHARACTER_LIMIT]; // If you are getting responses larger that 10kB, use another request.
+JsonObjectConst json;
 //---------------------------------------------------------------------------------------------------------------------------------------
 // Timer
 unsigned long updateTimer = 300000;
@@ -85,25 +87,13 @@ TM1637Display display = TM1637Display(CLK, DIO);
 void setup()
 {
   Serial.begin(9600);
-  while (!Serial)
-  {} // This line is blocking, remove it when you are finished
+  while (!Serial) {} // This line is blocking, remove it when you are finished
 
   connectToWifi(ssid, password);
 
   previousMillis = 0;
   Serial.print("Start time = ");
   Serial.println(previousMillis);
-
-  JsonObject json = makeAPIcall(host, url, sslClient, 443);
-
-  float mag = json["features"][0]["properties"]["mag"]; // This will return the magnitude of the last earthquake to happen
-  unsigned long quaketime = json["features"][0]["properties"]["time"]; // This will return the unix time of the last earthquake to happen
-
-
-
-  Serial.print("\n\nMagnitude: ");
-  Serial.println(mag);
-
 
   // initialize the button pin as a input:
   pinMode(buttonPin, INPUT);
@@ -120,29 +110,20 @@ void setup()
   delay(1000);
 
   Serial.println("End of setup loop");
-
-  //  haltFirmware();
-
-
 }
 //---------------------------------------------------------------------------------------------------------------------------------------
 
 void loop()
 {
+  Serial.println("new API call:");
+  makeAPIcall(host, url, sslClient, 443);
 
-  JsonObject json = makeAPIcall(host, url, sslClient, 443);
-
-  float mag = json["features"][0]["properties"]["mag"]; // This will return the magnitude of the last earthquake to happen
-  unsigned long quaketime = json["features"][0]["properties"]["time"].as<uint64_t>(); // This will return the unix time of the last earthquake to happen
-
-  Serial.print("\n\nMagnitude: ");
+  waitForSerialInput();
+  float mag = json["features"][0]["properties"]["mag"].as<float>(); // This will return the magnitude of the last earthquake to happen
   Serial.println(mag);
-  Serial.print("Unix time: ");
+  uint64_t quaketime = json["features"][0]["properties"]["time"].as<uint64_t>(); // This will return the unix time of the last earthquake to happen
   Serialprint64(quaketime);
+  Serial.println("done");
 
   delay(10000);
-
-  // haltFirmware();
-
-
 }
