@@ -15,6 +15,10 @@
    Do you need to add any certificates?
    Do you need to add any Libraries?
 */
+//---------------------------------------------------------------------------------------------------------------------------------------
+// library defines
+#define ARDUINOJSON_USE_LONG_LONG 1 // allow ArduinoJSON to use uint64_t
+//---------------------------------------------------------------------------------------------------------------------------------------
 // Libraries
 #include <WiFi101.h>
 #include <ArduinoJson.h>
