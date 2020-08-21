@@ -139,7 +139,7 @@ void loop()
   Serial.print("\n\nMagnitude: ");
   Serial.println(mag);
   Serial.print("Unix time: ");
-  Serial.println(quaketime);
+  Serialprint64(quaketime);
 
   delay(10000);
 
