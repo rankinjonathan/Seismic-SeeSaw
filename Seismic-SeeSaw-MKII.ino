@@ -15,8 +15,6 @@
    Do you need to add any certificates?
    Do you need to add any Libraries?
 */
-
-//---------------------------------------------------------------------------------------------------------------------------------------
 // Libraries
 #include <WiFi101.h>
 #include <ArduinoJson.h>
