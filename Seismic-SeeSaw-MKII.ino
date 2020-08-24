@@ -30,8 +30,8 @@ DeserializationError errorCheck;
 const unsigned int CHARACTER_LIMIT = 10000; // Limit of characters in HTTP response
 //---------------------------------------------------------------------------------------------------------------------------------------
 // WiFi Connection
-const char* ssid = "-------";          // replace these with the name and password for your local wi-fi network
-const char* password = "-------";
+const char* ssid = "VM6980419";          // replace these with the name and password for your local wi-fi network
+const char* password = "fz7ScsrpXxyd";
 //---------------------------------------------------------------------------------------------------------------------------------------
 // API
 String host = "earthquake.usgs.gov";
@@ -44,7 +44,7 @@ char httpResponse[CHARACTER_LIMIT]; // If you are getting responses larger that 
 JsonObjectConst json;
 //---------------------------------------------------------------------------------------------------------------------------------------
 // Timer
-unsigned long updateTimer = 300000;
+unsigned long updateTimer = 30000;
 //---------------------------------------------------------------------------------------------------------------------------------------
 // Input/output pins
 const int buttonPin = 11;    // the number of the pushbutton pin
@@ -53,10 +53,9 @@ const int richterPin = 9;    // analogue dial connected to digital pin 9
 
 //---------------------------------------------------------------------------------------------------------------------------------------
 // Variables which will change
-int buttonPushCounter = 0;   // counter for the number of button presses
+int buttonPushCounter = 1;   // counter for the number of button presses
 int buttonState = 0;         // current state of the button
 int lastButtonState = 0;     // previous state of the button
-int happened1 = 0;
 int serialValue = 0;         // the sensor value
 int serialMin = 15;         // minimum magnitude of earthquake
 int serialMax = 100;           // maximum magnitude of earthquake
@@ -109,21 +108,121 @@ void setup()
   display.setBrightness(7);
   delay(1000);
 
+  makeAPIcall(host, url, sslClient, 443);
+
+  float magOld = json["features"][0]["properties"]["mag"].as<float>(); // This will return the magnitude of the last earthquake to happen
+  float magNew = json["features"][0]["properties"]["mag"].as<float>();;
+
+  //  uint64_t quakeTimeOld = json["features"][0]["properties"]["time"].as<uint64_t>(); // This will return the unix time of the last earthquake to happen
+
+  Serial.print("mag old:  ");
+  Serial.println(magOld);
+  Serial.print("mag new:  ");
+  Serial.println(magNew);
+
   Serial.println("End of setup loop");
 }
 //---------------------------------------------------------------------------------------------------------------------------------------
 
 void loop()
 {
-  Serial.println("new API call:");
-  makeAPIcall(host, url, sslClient, 443);
+  //  Serial.println("new API call:");
 
-  waitForSerialInput();
-  float mag = json["features"][0]["properties"]["mag"].as<float>(); // This will return the magnitude of the last earthquake to happen
-  Serial.println(mag);
-  uint64_t quaketime = json["features"][0]["properties"]["time"].as<uint64_t>(); // This will return the unix time of the last earthquake to happen
-  Serialprint64(quaketime);
-  Serial.println("done");
+  buttonState = !digitalRead(buttonPin);
+  previousMillis = millis();
 
-  delay(10000);
+  if (buttonState != lastButtonState) {
+    // if the state has changed, increment the counter
+    if (buttonState == HIGH) {
+      // if the current state is HIGH then the button went from off to on:
+      buttonPushCounter++;
+
+      if (buttonPushCounter == 1) {
+        pressTime1 = millis();
+        Serial.println("Contract set");
+      } else {
+        buttonPushCounter = 0;
+        Serial.println("Contract reset");
+      }
+    }
+  }
+
+  delay(50);
+
+
+
+  lastButtonState = buttonState;
+
+  if (buttonPushCounter == 0) {
+    wait1 = 0;
+  }
+  else if (buttonPushCounter == 1) {
+    wait1 = millis() - pressTime1;
+    //    display.showNumberDecEx(300, 0b01000000, false, 4, 0);
+
+  }
+
+  if (wait1 != 0 && timeLimit > wait1) {
+
+    makeAPIcall(host, url, sslClient, 443);
+    float magNew = json["features"][0]["properties"]["mag"].as<float>(); // This will return the magnitude of the last earthquake to happen
+    float magOld;
+    
+    float diff = magNew - magOld;
+    
+        if (diff > 0.1) {
+          //Donate the money
+//          int turn;
+Serial.print("Test point 1 ");
+
+//          turn = ServoTurn(120);
+        }
+
+        delay(5000);
+
+  }
+
+  else if (timeLimit < wait1) {
+    Serial.println("Result --- Contract reset - No trigger");
+    digitalWrite(ledPin, LOW);
+//    int turn;
+//    turn = ServoTurn(60);
+    buttonPushCounter = 0;
+    pressTime1 = millis();
+  }
+  //  waitForSerialInput();
+  //  Serialprint64(quakeTime);
+  //  Serial.println("done");
+
+}
+
+int ServoTurn(int r) {
+
+  int cw = 1111;
+  int acw = 1380; //dont touch
+  if (r > 90) {
+    myservo.attach(12);  // attaches the servo on pin 9 to the servo object
+    myservo.write(r);  // set servo to mid-point
+    delay(acw);
+    myservo.detach();
+    delay(1000);
+    r = r - 60;
+    myservo.attach(12);  // attaches the servo on pin 9 to the servo object
+    myservo.write(r);
+    delay(cw);
+    myservo.detach();
+  }
+  else if (r <= 90) {
+    myservo.attach(12);  // attaches the servo on pin 9 to the servo object
+    myservo.write(r);  // set servo to mid-point
+    delay(acw);
+    myservo.detach();
+    delay(1000);
+    r = r + 60;
+    myservo.attach(12);  // attaches the servo on pin 9 to the servo object
+    myservo.write(r);
+    delay(cw);
+    myservo.detach();
+  }
+
 }
