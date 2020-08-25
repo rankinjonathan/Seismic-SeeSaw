@@ -30,8 +30,8 @@ DeserializationError errorCheck;
 const unsigned int CHARACTER_LIMIT = 10000; // Limit of characters in HTTP response
 //---------------------------------------------------------------------------------------------------------------------------------------
 // WiFi Connection
-const char* ssid = "VM6980419";          // replace these with the name and password for your local wi-fi network
-const char* password = "fz7ScsrpXxyd";
+const char* ssid = "";          // replace these with the name and password for your local wi-fi network
+const char* password = "";
 //---------------------------------------------------------------------------------------------------------------------------------------
 // API
 String host = "earthquake.usgs.gov";
@@ -59,6 +59,10 @@ int lastButtonState = 0;     // previous state of the button
 int serialValue = 0;         // the sensor value
 int serialMin = 15;         // minimum magnitude of earthquake
 int serialMax = 100;           // maximum magnitude of earthquake
+int magNewInt = 0;
+int magOldInt = 0;
+int diff;
+
 
 unsigned long previousMillis;
 unsigned long timeLimit = 180000;
@@ -68,6 +72,9 @@ unsigned long wait1;
 
 Servo myservo;  // create servo object to control a servo
 int pos = 0;    // variable to store the servo position
+
+float magOld;
+float magNew;
 
 //---------------------------------------------------------------------------------------------------------------------------------------
 // Definitions
@@ -108,10 +115,7 @@ void setup()
   display.setBrightness(7);
   delay(1000);
 
-  makeAPIcall(host, url, sslClient, 443);
 
-  float magOld = json["features"][0]["properties"]["mag"].as<float>(); // This will return the magnitude of the last earthquake to happen
-  float magNew = json["features"][0]["properties"]["mag"].as<float>();;
 
   //  uint64_t quakeTimeOld = json["features"][0]["properties"]["time"].as<uint64_t>(); // This will return the unix time of the last earthquake to happen
 
@@ -128,7 +132,7 @@ void loop()
 {
   //  Serial.println("new API call:");
 
-  buttonState = !digitalRead(buttonPin);
+  buttonState = digitalRead(buttonPin);
   previousMillis = millis();
 
   if (buttonState != lastButtonState) {
@@ -136,7 +140,6 @@ void loop()
     if (buttonState == HIGH) {
       // if the current state is HIGH then the button went from off to on:
       buttonPushCounter++;
-
       if (buttonPushCounter == 1) {
         pressTime1 = millis();
         Serial.println("Contract set");
@@ -149,46 +152,51 @@ void loop()
 
   delay(50);
 
-
-
   lastButtonState = buttonState;
 
   if (buttonPushCounter == 0) {
     wait1 = 0;
   }
   else if (buttonPushCounter == 1) {
+    makeAPIcall(host, url, sslClient, 443);
+    float magOld = json["features"][0]["properties"]["mag"]; // This will return the magnitude of the last earthquake to happen
+    magOldInt = magOld * 100;
     wait1 = millis() - pressTime1;
-    //    display.showNumberDecEx(300, 0b01000000, false, 4, 0);
 
+    //    display.showNumberDecEx(300, 0b01000000, false, 4, 0);
   }
 
   if (wait1 != 0 && timeLimit > wait1) {
 
     makeAPIcall(host, url, sslClient, 443);
-    float magNew = json["features"][0]["properties"]["mag"].as<float>(); // This will return the magnitude of the last earthquake to happen
-    float magOld;
-    
-    float diff = magNew - magOld;
-    
-        if (diff > 0.1) {
-          //Donate the money
-//          int turn;
-Serial.print("Test point 1 ");
+    float magNew = json["features"][0]["properties"]["mag"]; // This will return the magnitude of the last earthquake to happen
+    magNewInt = magNew * 100;
+    diff = magNewInt - magOldInt;
+    diff = abs(diff);
+    Serial.print("Test point 2: diff - ");
+    Serial.println(diff);
+    if (diff > 1) {
+      //Donate the money
+      int turn;
+      turn = ServoTurn(120);
+      diff = 0;
+    pressTime1 = millis();
 
-//          turn = ServoTurn(120);
-        }
+    }
 
-        delay(5000);
+    delay(5000);
 
   }
 
   else if (timeLimit < wait1) {
     Serial.println("Result --- Contract reset - No trigger");
     digitalWrite(ledPin, LOW);
-//    int turn;
-//    turn = ServoTurn(60);
+    int turn;
+    turn = ServoTurn(60);
     buttonPushCounter = 0;
     pressTime1 = millis();
+    diff = 0;
+
   }
   //  waitForSerialInput();
   //  Serialprint64(quakeTime);
