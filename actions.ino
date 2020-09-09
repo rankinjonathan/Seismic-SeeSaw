@@ -27,3 +27,23 @@ void moveServoMotor(int r) {
     myservo.detach();
   }
 }
+
+void moveDial(int m) {
+
+  int maxMag = 1000;
+  int minMag = 1;
+  int dialValue = 0;
+  
+   Serial.print("Test point m - ");
+  Serial.println(m);
+  dialValue = map(m, minMag, maxMag, 20, 200);
+  for(int i=0; i<3; i++){
+  analogWrite(richterPin, dialValue);
+  delay(600);
+  analogWrite(richterPin, 0);
+  dialValue = dialValue/2; 
+}
+
+  return;
+
+}

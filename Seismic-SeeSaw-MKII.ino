@@ -56,16 +56,21 @@ const int richterPin = 9;    // analogue dial connected to digital pin 9
 int buttonPushCounter = 1;   // counter for the number of button presses
 int buttonState = 0;         // current state of the button
 int lastButtonState = 0;     // previous state of the button
-int serialValue = 0;         // the sensor value
-int serialMin = 15;         // minimum magnitude of earthquake
-int serialMax = 100;           // maximum magnitude of earthquake
+
 int magNewInt = 0;
 int magOldInt = 0;
 int diff;
+int ledState = LOW;
 
 
 unsigned long previousMillis;
-unsigned long timeLimit = 30000000;
+unsigned long previousMillisClock;
+unsigned long currentMillisClock;
+
+const long interval = 1000;           // interval at which to blink (milliseconds)
+
+
+unsigned long timeLimit = 60000;
 unsigned long difference;
 unsigned long pressTime1;
 unsigned long wait1;
@@ -98,6 +103,7 @@ void setup()
   connectToWifi(ssid, password);
 
   previousMillis = 0;
+  previousMillisClock = 0;
   Serial.print("Start time = ");
   Serial.println(previousMillis);
 
@@ -143,6 +149,7 @@ void loop()
 
   buttonState = digitalRead(buttonPin);
   previousMillis = millis();
+  previousMillisClock = previousMillis;
 
   if (buttonState != lastButtonState) {
     // if the state has changed, increment the counter
@@ -151,6 +158,7 @@ void loop()
       buttonPushCounter++;
       if (buttonPushCounter == 1) {
         pressTime1 = millis();
+        currentMillisClock = pressTime1;
         Serial.println("Contract set");
         makeAPIcall(host, url, sslClient, 443);
         float magOld = json["features"][0]["properties"]["mag"]; // This will return the magnitude of the last earthquake to happen
@@ -176,10 +184,6 @@ void loop()
     wait1 = millis() - pressTime1;
     Serial.println("Test point 7  ");
 
-
-
-
-    //    display.showNumberDecEx(300, 0b01000000, false, 4, 0);
   }
 
   if (wait1 != 0 && timeLimit > wait1) {
@@ -191,10 +195,29 @@ void loop()
     diff = abs(diff);
     Serial.print("Test point 2: diff - ");
     Serial.println(diff);
+
+ if (currentMillisClock - previousMillisClock >= interval) {
+int timeRemaining = timeLimit - wait1;
+    Serial.print("Test point : time remaining - ");
+    Serial.println(timeRemaining);
+previousMillisClock = currentMillisClock;
+
+    // if the LED is off turn it on and vice-versa:
+    if (ledState == LOW) {
+      ledState = HIGH;
+    } else {
+      ledState = LOW;
+    }
+
+    // set the LED with the ledState of the variable:
+    digitalWrite(ledPin, ledState);
+  }
+    
     if (diff > 1) {
       //Donate the money
       //      int turn;
       moveServoMotor(120);
+      moveDial(magNewInt);
       Serial.println("Result --- Contract reset - trigger");
       magOldInt = magNewInt;
           pressTime1 = millis();
@@ -202,7 +225,7 @@ void loop()
 
     }
 
-    delay(5000);
+    delay(500);
 
   }
 
