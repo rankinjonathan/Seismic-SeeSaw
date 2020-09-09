@@ -86,8 +86,9 @@ float magNew;
 #define CLK 6
 #define DIO 5
 
-#define numberOfSeconds(_time_) ((_time_/1000)%60)
-#define numberOfMinutes(_time_) (((_time_/1000)%60))%60)
+#define numberOfSeconds(_time_)  ((_time_/1000)%60)
+#define numberOfMinutes(_time_)  (((_time_/1000)/60)%60)
+
 const uint8_t OFF[] = {0, 0, 0, 0};
 const uint8_t PLAY[] = {B01110011, B00111000, B01011111, B01101110};
 
@@ -108,13 +109,13 @@ void setup()
   Serial.println(previousMillis);
 
   // initialize the button pin as a input:
-//  pinMode(buttonPin, INPUT);
+  //  pinMode(buttonPin, INPUT);
   pinMode(buttonPin, INPUT_PULLUP);
 
 
   // initialize the LED as an output:
   pinMode(ledPin, OUTPUT);
-  
+
   // initialize the LED as an output:
   pinMode(richterPin, OUTPUT);
 
@@ -160,9 +161,9 @@ void loop()
         pressTime1 = millis();
         currentMillisClock = pressTime1;
         Serial.println("Contract set");
-        makeAPIcall(host, url, sslClient, 443);
-        float magOld = json["features"][0]["properties"]["mag"]; // This will return the magnitude of the last earthquake to happen
-        magOldInt = magOld * 100;
+        //        makeAPIcall(host, url, sslClient, 443);
+        //        float magOld = json["features"][0]["properties"]["mag"]; // This will return the magnitude of the last earthquake to happen
+        //        magOldInt = magOld * 100;
       } else {
         buttonPushCounter = 0;
         Serial.println("Contract reset");
@@ -188,6 +189,31 @@ void loop()
 
   if (wait1 != 0 && timeLimit > wait1) {
 
+    if (currentMillisClock - previousMillisClock >= interval) {
+      int timeRemaining = timeLimit - wait1;
+
+      int seconds = numberOfSeconds(timeRemaining);
+      int minutes = numberOfMinutes(timeRemaining);
+      display.clear();
+      display.showNumberDecEx(seconds, 0b11100000, true, 2, 2); // Expect: _-5_
+      //      display.showNumberDecEx(minutes, 0b11100000, false, 1, 1); // Expect: _-5_
+
+
+      Serial.print("Test point : time remaining - ");
+      Serial.println(timeRemaining);
+      previousMillisClock = currentMillisClock;
+
+      // if the LED is off turn it on and vice-versa:
+      if (ledState == LOW) {
+        ledState = HIGH;
+      } else {
+        ledState = LOW;
+      }
+
+      // set the LED with the ledState of the variable:
+      digitalWrite(ledPin, ledState);
+    }
+
     makeAPIcall(host, url, sslClient, 443);
     float magNew = json["features"][0]["properties"]["mag"]; // This will return the magnitude of the last earthquake to happen
     magNewInt = magNew * 100;
@@ -196,32 +222,23 @@ void loop()
     Serial.print("Test point 2: diff - ");
     Serial.println(diff);
 
- if (currentMillisClock - previousMillisClock >= interval) {
-int timeRemaining = timeLimit - wait1;
-    Serial.print("Test point : time remaining - ");
-    Serial.println(timeRemaining);
-previousMillisClock = currentMillisClock;
 
-    // if the LED is off turn it on and vice-versa:
-    if (ledState == LOW) {
-      ledState = HIGH;
-    } else {
-      ledState = LOW;
-    }
 
-    // set the LED with the ledState of the variable:
-    digitalWrite(ledPin, ledState);
-  }
-    
     if (diff > 1) {
       //Donate the money
       //      int turn;
-      moveServoMotor(120);
       moveDial(magNewInt);
+
+      moveServoMotor(120);
       Serial.println("Result --- Contract reset - trigger");
       magOldInt = magNewInt;
-          pressTime1 = millis();
-          buttonPushCounter = 0;
+      pressTime1 = millis();
+      buttonPushCounter = 0;
+
+      display.showNumberDecEx(0, 0b11100000, true, 2, 2); // Expect: _-5_
+      display.showNumberDecEx(1, 0b11100000, false, 1, 1); // Expect: _-5_
+
+
 
     }
 
@@ -241,6 +258,8 @@ previousMillisClock = currentMillisClock;
     Serial.print("Test point 4: wait1 - ");
     Serial.print(wait1);
 
+    display.showNumberDecEx(0, 0b11100000, true, 2, 2); // Expect: _-5_
+    display.showNumberDecEx(1, 0b11100000, false, 1, 1); // Expect: _-5_
 
   }
   //  waitForSerialInput();
