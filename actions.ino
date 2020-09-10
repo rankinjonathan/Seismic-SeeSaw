@@ -40,7 +40,7 @@ void moveDial(int m) {
   for(int i=0; i<3; i++){
   analogWrite(richterPin, dialValue);
   delay(600);
-  analogWrite(richterPin, 0);
+  analogWrite(richterPin, LOW);
   dialValue = dialValue/2; 
 }
 

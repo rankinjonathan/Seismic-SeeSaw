@@ -158,12 +158,12 @@ void loop()
       // if the current state is HIGH then the button went from off to on:
       buttonPushCounter++;
       if (buttonPushCounter == 1) {
-        pressTime1 = millis();
-        currentMillisClock = pressTime1;
+                pressTime1 = millis();
+                currentMillisClock = pressTime1;
         Serial.println("Contract set");
-        //        makeAPIcall(host, url, sslClient, 443);
-        //        float magOld = json["features"][0]["properties"]["mag"]; // This will return the magnitude of the last earthquake to happen
-        //        magOldInt = magOld * 100;
+        makeAPIcall(host, url, sslClient, 443);
+        float magOld = json["features"][0]["properties"]["mag"]; // This will return the magnitude of the last earthquake to happen
+        magOldInt = magOld * 100;
       } else {
         buttonPushCounter = 0;
         Serial.println("Contract reset");
@@ -182,7 +182,10 @@ void loop()
 
   }
   else if (buttonPushCounter == 1) {
+//    pressTime1 = millis();
+//    currentMillisClock = pressTime1;
     wait1 = millis() - pressTime1;
+
     Serial.println("Test point 7  ");
 
   }
